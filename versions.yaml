@@ -1,0 +1,58 @@
+# Copyright 2019 Google LLC
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+versions:
+
+  # MediaWiki with PHP 7.3-apache on Debian 9
+  - dir: '1/1.33'
+    repo: 'mediawiki1-php7-apache'
+    templateSubDir: 1/1.33
+    from: 'gcr.io/cloud-marketplace-ops/php7-apache:7.3-debian9'
+    tags:
+    - '1.33.1-debian9'
+    - '1.33.1'
+    - 'latest'
+    templateArgs:
+      cmd: 'apache2-foreground'
+    packages:
+      mediawiki:
+        version: '1.33.1'
+        major: '1.33'
+        sha512: '0cf786872714546fb13843bc5f8b851bfcc665f7459a0326a3fb77efb0d1976b618d4e2206d3fb0852a60b7fa375e98aa0b5600b03209ce9eabd9e3dc5db7d1a'
+    excludeTests:
+    - tests/functional_tests/apache_exporter_test.yaml
+
+  # Apache Exporter for Prometheus
+  - dir: 'exporter'
+    repo: 'mediawiki1-php7-apache'
+    templateSubDir: exporter
+    tags:
+    - 'exporter'
+    - 'exporter-0.5.0'
+    from: gcr.io/google-appengine/debian9:latest
+    templateArgs:
+      exporter_notices_check_sum: '28baca3649151b2b68f5d4e1b07d225c99b435e3f59d3d4e9b6e19d747c3d8d2'
+    packages:
+      apache_exporter:
+        version: '0.5.0'
+      golang:
+        version: '1.13'
+    excludeTests:
+    - tests/functional_tests/running_test.yaml
+
+# Enable parallel build.
+cloudbuild:
+  enable_parallel: true

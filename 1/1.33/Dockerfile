@@ -6,6 +6,12 @@ ENV MEDIAWIKI_MAJOR_VERSION 1.33
 ENV MEDIAWIKI_VERSION 1.33.1
 ENV MEDIAWIKI_SHA512 0cf786872714546fb13843bc5f8b851bfcc665f7459a0326a3fb77efb0d1976b618d4e2206d3fb0852a60b7fa375e98aa0b5600b03209ce9eabd9e3dc5db7d1a
 
+ENV COMPOSER_VERSION 1.9.0
+ENV COMPOSER_SHA1 1be3e5a086739ea5fd8ea85d7702540ddc0e8e2c
+
+ENV MEDIAWIKI_HOSTNAME localhost
+ENV MEDIAWIKI_PORT 8080
+
 ENV C2D_RELEASE 1.33.1
 
 # System dependencies
@@ -85,10 +91,32 @@ RUN set -e; \
 	mkdir -p /var/www/data; \
 	chown -R www-data:www-data /var/www/data
 
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+	&& php -r "if (hash_file('sha1', 'composer-setup.php') === '${COMPOSER_SHA1}') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+	&& php composer-setup.php --install-dir /usr/local/bin --version "${COMPOSER_VERSION}" \
+	&& php -r "unlink('composer-setup.php');"
+
 # MediaWiki setup
 RUN set -eux; \
 	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
 	echo "${MEDIAWIKI_SHA512} *mediawiki.tar.gz" | sha512sum -c -; \
 	tar -x --strip-components=1 -f mediawiki.tar.gz; \
 	rm mediawiki.tar.gz; \
-	chown -R www-data:www-data extensions skins cache images
+	chown -R www-data:www-data extensions skins cache images \
+	&& mkdir -p /data
+
+RUN apt update && apt install -y zip unzip
+
+RUN php maintenance/install.php \
+	--confpath /var/www/html/ \
+	--dbname mywiki \
+	--dbtype sqlite \
+	--pass somepassword  \
+	--scriptpath / \
+	--server "http://${MEDIAWIKI_HOSTNAME}:${MEDIAWIKI_PORT}" \
+	my_first_wiki \
+	admin
+
+RUN chown -R www-data:www-data /data
+
+RUN composer.phar install --no-dev --no-interaction

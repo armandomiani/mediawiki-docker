@@ -32,6 +32,9 @@ versions:
         version: '1.33.1'
         major: '1.33'
         sha512: '0cf786872714546fb13843bc5f8b851bfcc665f7459a0326a3fb77efb0d1976b618d4e2206d3fb0852a60b7fa375e98aa0b5600b03209ce9eabd9e3dc5db7d1a'
+      composer:
+        version: '1.9.0'
+        sha1: '1be3e5a086739ea5fd8ea85d7702540ddc0e8e2c'
     excludeTests:
     - tests/functional_tests/apache_exporter_test.yaml
 

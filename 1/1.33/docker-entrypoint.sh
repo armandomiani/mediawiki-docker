@@ -4,7 +4,7 @@ php maintenance/install.php \
 	--confpath /var/www/html/ \
 	--dbname mywiki \
 	--dbtype sqlite \
-	--pass somepassword  \
+	--pass "${MEDIAWIKI_ADMIN_PASSWORD}"  \
 	--scriptpath "" \
 	--server "http://${MEDIAWIKI_HOSTNAME}:${MEDIAWIKI_PORT}" \
 	"${MEDIAWIKI_SITENAME}" \

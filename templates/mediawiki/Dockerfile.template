@@ -8,7 +8,15 @@ ENV MEDIAWIKI_MAJOR_VERSION {{ $mediawiki.Major }}
 ENV MEDIAWIKI_VERSION {{ $mediawiki.Version }}
 ENV MEDIAWIKI_SHA512 {{ $mediawiki.Sha512 }}
 
-ENV C2D_RELEASE {{ $mediawiki.Version }}
+ENV COMPOSER_VERSION 1.9.0
+ENV COMPOSER_SHA1 1be3e5a086739ea5fd8ea85d7702540ddc0e8e2c
+
+ENV MEDIAWIKI_HOSTNAME localhost
+ENV MEDIAWIKI_PORT 8080
+ENV MEDIAWIKI_SITENAME my_first_wiki
+ENV MEDIAWIKI_ADMIN_USER admin
+
+ENV C2D_RELEASE 1.33.1
 
 # System dependencies
 RUN set -e; \
@@ -87,10 +95,25 @@ RUN set -e; \
 	mkdir -p /var/www/data; \
 	chown -R www-data:www-data /var/www/data
 
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+	&& php -r "if (hash_file('sha1', 'composer-setup.php') === '${COMPOSER_SHA1}') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+	&& php composer-setup.php --install-dir /usr/local/bin --version "${COMPOSER_VERSION}" \
+	&& php -r "unlink('composer-setup.php');"
+
 # MediaWiki setup
 RUN set -eux; \
 	curl -fSL "https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}/mediawiki-${MEDIAWIKI_VERSION}.tar.gz" -o mediawiki.tar.gz; \
 	echo "${MEDIAWIKI_SHA512} *mediawiki.tar.gz" | sha512sum -c -; \
 	tar -x --strip-components=1 -f mediawiki.tar.gz; \
 	rm mediawiki.tar.gz; \
-	chown -R www-data:www-data extensions skins cache images
+	chown -R www-data:www-data extensions skins cache images \
+	&& mkdir -p /data
+
+RUN apt update && apt install -y zip unzip
+
+# RUN composer.phar install --no-dev --no-interaction
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD ["apache2-foreground"]

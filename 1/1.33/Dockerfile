@@ -11,6 +11,8 @@ ENV COMPOSER_SHA1 1be3e5a086739ea5fd8ea85d7702540ddc0e8e2c
 
 ENV MEDIAWIKI_HOSTNAME localhost
 ENV MEDIAWIKI_PORT 8080
+ENV MEDIAWIKI_SITENAME my_first_wiki
+ENV MEDIAWIKI_ADMIN_USER admin
 
 ENV C2D_RELEASE 1.33.1
 
@@ -107,16 +109,9 @@ RUN set -eux; \
 
 RUN apt update && apt install -y zip unzip
 
-RUN php maintenance/install.php \
-	--confpath /var/www/html/ \
-	--dbname mywiki \
-	--dbtype sqlite \
-	--pass somepassword  \
-	--scriptpath / \
-	--server "http://${MEDIAWIKI_HOSTNAME}:${MEDIAWIKI_PORT}" \
-	my_first_wiki \
-	admin
+# RUN composer.phar install --no-dev --no-interaction
 
-RUN chown -R www-data:www-data /data
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN composer.phar install --no-dev --no-interaction
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD ["apache2-foreground"]

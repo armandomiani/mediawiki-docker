@@ -1,9 +1,18 @@
-CONTAINER_NAME := mediawiki-docker
+IMAGE_NAME := mediawiki-docker
+CONTAINER_NAME := mediawiki-container
 DF_FOLDER := 1/1.33/
 
 build:
-	docker build -t $(CONTAINER_NAME) $(DF_FOLDER)
+	docker build -t $(IMAGE_NAME) $(DF_FOLDER)
 
 
 run:
-	docker run -it -d -p 8080:80 $(CONTAINER_NAME)
+	docker run -it -d --name $(CONTAINER_NAME) -p 8080:80 $(IMAGE_NAME)
+
+
+stop:
+	docker rm -f `docker ps -aq`
+
+
+attach:
+	docker exec -it $(CONTAINER_NAME) bash

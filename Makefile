@@ -7,7 +7,7 @@ build:
 
 
 run:
-	docker run -it -d --name $(CONTAINER_NAME) -p 8080:80 $(IMAGE_NAME)
+	docker run -it -d --name $(CONTAINER_NAME) -e "MEDIAWIKI_PORT=80" -p 8080:80 $(IMAGE_NAME)
 
 
 stop:

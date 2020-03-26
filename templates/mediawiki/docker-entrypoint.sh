@@ -12,6 +12,4 @@ php maintenance/install.php \
 
 chown -R www-data:www-data /data
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
 exec "$@"
